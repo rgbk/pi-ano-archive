@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>π Music - Musical Toy</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="digits-container" id="digits"></div>
+    
+    <!-- Recenter Button -->
+    <button id="recenterBtn" class="recenter-btn" style="display: none;">Recenter</button>
+    
+    <!-- Hidden Control Panel -->
+    <div id="controlPanel" class="control-panel" style="display: none;">
+        
+        <div class="panel-tabs">
+            <button class="tab-btn active" data-tab="general">General</button>
+            <button class="tab-btn" data-tab="kick">Kick</button>
+            <button class="tab-btn" data-tab="hihat">Hi-Hat</button>
+            <button class="tab-btn" data-tab="typography">Typography</button>
+        </div>
+        
+        <div class="panel-content">
+            <div id="general-tab" class="tab-panel active">
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <label>Tempo</label>
+                        <input type="range" id="tempoSlider" min="50" max="500" value="200">
+                        <span id="tempoValue">200 BPM</span>
+                    </div>
+                    <div class="stat-item">
+                        <span id="timer">0s</span>
+                        <span id="digitCounter">0</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Pitch Shift</label>
+                    <input type="range" id="globalPitch" min="-12" max="12" value="0">
+                    <span id="globalPitchValue">0</span>
+                </div>
+                
+                <div class="control-group">
+                    <label>Scale (2-9)</label>
+                    <select id="scaleSelect">
+                        <option value="major">Major</option>
+                        <option value="minor">Minor</option>
+                        <option value="pentatonic">Pentatonic</option>
+                        <option value="blues">Blues</option>
+                        <option value="chromatic">Chromatic</option>
+                        <option value="wholetone">Whole Tone</option>
+                    </select>
+                </div>
+                
+                <div class="control-group" style="justify-content: center; margin-top: 2rem;">
+                    <button id="playPauseBtn" class="control-btn primary">Play</button>
+                </div>
+            </div>
+            
+            <div id="kick-tab" class="tab-panel">
+                <div class="control-grid">
+                    <div class="control-group">
+                        <label>Background Color</label>
+                        <input type="color" id="digit0BgColor" value="#000000">
+                    </div>
+                    <div class="control-group">
+                        <label>Foreground Color</label>
+                        <input type="color" id="digit0FgColor" value="#ffffff">
+                    </div>
+                    <div class="control-group">
+                        <label>Reverb</label>
+                        <input type="range" id="digit0Reverb" min="0" max="100" value="0">
+                        <span id="digit0ReverbValue">0%</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Mix</label>
+                        <input type="range" id="digit0DelayMix" min="0" max="100" value="0">
+                        <span id="digit0DelayMixValue">0%</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Sync</label>
+                        <select id="digit0DelaySync">
+                            <option value="free">Free Time</option>
+                            <option value="1/1">1/1 (Whole)</option>
+                            <option value="1/2">1/2 (Half)</option>
+                            <option value="1/4">1/4 (Quarter)</option>
+                            <option value="1/8">1/8 (Eighth)</option>
+                            <option value="1/16">1/16 (Sixteenth)</option>
+                            <option value="1/4T">1/4T (Quarter Triplet)</option>
+                            <option value="1/8T">1/8T (Eighth Triplet)</option>
+                            <option value="1/4D">1/4D (Dotted Quarter)</option>
+                            <option value="1/8D">1/8D (Dotted Eighth)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Time</label>
+                        <input type="range" id="digit0DelayTime" min="50" max="1000" value="250">
+                        <span id="digit0DelayTimeValue">250ms</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Feedback</label>
+                        <input type="range" id="digit0DelayFeedback" min="0" max="60" value="10">
+                        <span id="digit0DelayFeedbackValue">10%</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Filter</label>
+                        <input type="range" id="digit0DelayFilter" min="200" max="8000" value="4000">
+                        <span id="digit0DelayFilterValue">4000Hz</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Wave Type</label>
+                        <select id="digit0WaveType">
+                            <option value="sine">Sine</option>
+                            <option value="square" selected>Square</option>
+                            <option value="sawtooth">Sawtooth</option>
+                            <option value="triangle">Triangle</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="hihat-tab" class="tab-panel">
+                <div class="control-grid">
+                    <div class="control-group">
+                        <label>Background Color</label>
+                        <input type="color" id="digit1BgColor" value="#ffffff">
+                    </div>
+                    <div class="control-group">
+                        <label>Foreground Color</label>
+                        <input type="color" id="digit1FgColor" value="#000000">
+                    </div>
+                    <div class="control-group">
+                        <label>Reverb</label>
+                        <input type="range" id="digit1Reverb" min="0" max="100" value="0">
+                        <span id="digit1ReverbValue">0%</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Mix</label>
+                        <input type="range" id="digit1DelayMix" min="0" max="100" value="0">
+                        <span id="digit1DelayMixValue">0%</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Sync</label>
+                        <select id="digit1DelaySync">
+                            <option value="free">Free Time</option>
+                            <option value="1/1">1/1 (Whole)</option>
+                            <option value="1/2">1/2 (Half)</option>
+                            <option value="1/4">1/4 (Quarter)</option>
+                            <option value="1/8">1/8 (Eighth)</option>
+                            <option value="1/16">1/16 (Sixteenth)</option>
+                            <option value="1/4T">1/4T (Quarter Triplet)</option>
+                            <option value="1/8T">1/8T (Eighth Triplet)</option>
+                            <option value="1/4D">1/4D (Dotted Quarter)</option>
+                            <option value="1/8D">1/8D (Dotted Eighth)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Time</label>
+                        <input type="range" id="digit1DelayTime" min="50" max="1000" value="250">
+                        <span id="digit1DelayTimeValue">250ms</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Feedback</label>
+                        <input type="range" id="digit1DelayFeedback" min="0" max="60" value="10">
+                        <span id="digit1DelayFeedbackValue">10%</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Delay Filter</label>
+                        <input type="range" id="digit1DelayFilter" min="200" max="8000" value="4000">
+                        <span id="digit1DelayFilterValue">4000Hz</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Wave Type</label>
+                        <select id="digit1WaveType">
+                            <option value="sine" selected>Sine</option>
+                            <option value="square">Square</option>
+                            <option value="sawtooth">Sawtooth</option>
+                            <option value="triangle">Triangle</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="typography-tab" class="tab-panel">
+                <div class="control-grid">
+                    <div class="control-group">
+                        <label>Font Size</label>
+                        <input type="range" id="digitSize" min="3" max="12" value="6">
+                        <span id="digitSizeValue">6vw</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Line Height</label>
+                        <input type="range" id="lineHeight" min="0" max="2" step="0.05" value="0.75">
+                        <span id="lineHeightValue">0.75</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Letter Spacing</label>
+                        <input type="range" id="letterSpacing" min="-0.1" max="0.1" step="0.01" value="-0.025">
+                        <span id="letterSpacingValue">-0.025em</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

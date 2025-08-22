@@ -36,12 +36,12 @@ class PiMusic {
         
         this.updateNoteFrequencies();
         
-        // Individual settings for digits 0 and 1
+        // Individual settings for digits 0 and 1 - updated to match prefs.json
         this.digit0Settings = {
             bgColor: '#000000',
             fgColor: '#ffffff',
-            reverb: 0,
-            delayMix: 0,
+            reverb: 20,
+            delayMix: 66,
             delayTime: 250,
             delaySync: 'free',
             delayFeedback: 10,
@@ -52,7 +52,7 @@ class PiMusic {
         this.digit1Settings = {
             bgColor: '#ffffff',
             fgColor: '#000000',
-            reverb: 0,
+            reverb: 20,
             delayMix: 0,
             delayTime: 250,
             delaySync: 'free',
@@ -71,12 +71,146 @@ class PiMusic {
         this.initElements();
         this.initEventListeners();
         this.displayPiDigits();
+        await this.loadPreferences();
         await this.initAudioContext();
         
         // Auto-play immediately after user interaction
         this.startAutoplay();
     }
     
+    async loadPreferences() {
+        try {
+            // Add cache-busting parameter to ensure fresh data
+            const response = await fetch('./prefs.json?' + Date.now());
+            if (!response.ok) {
+                console.log('No prefs.json found, using defaults');
+                return;
+            }
+            
+            const prefs = await response.json();
+            
+            // Apply preferences to settings
+            if (prefs.tempo) this.tempo = prefs.tempo;
+            if (prefs.globalPitch !== undefined) this.globalPitch = prefs.globalPitch;
+            if (prefs.currentScale) this.currentScale = prefs.currentScale;
+            
+            if (prefs.digit0Settings) {
+                this.digit0Settings = { ...this.digit0Settings, ...prefs.digit0Settings };
+            }
+            
+            if (prefs.digit1Settings) {
+                this.digit1Settings = { ...this.digit1Settings, ...prefs.digit1Settings };
+            }
+            
+            // Update UI to reflect loaded preferences
+            this.updateUIFromSettings(prefs);
+            
+            console.log('Loaded preferences:', prefs);
+            console.log('Applied values - tempo:', this.tempo, 'pitch:', this.globalPitch, 'scale:', this.currentScale);
+        } catch (error) {
+            console.log('Failed to load prefs.json, using defaults:', error);
+        }
+    }
+    
+    updateUIFromSettings(prefs) {
+        // Update tempo
+        const tempoSlider = document.getElementById('tempoSlider');
+        const tempoValue = document.getElementById('tempoValue');
+        if (tempoSlider && prefs.tempo) {
+            console.log('Setting tempo slider to:', prefs.tempo);
+            tempoSlider.value = prefs.tempo;
+            if (tempoValue) tempoValue.textContent = `${prefs.tempo} BPM`;
+        }
+        
+        // Update global pitch
+        const pitchSlider = document.getElementById('globalPitch');
+        const pitchValue = document.getElementById('globalPitchValue');
+        if (pitchSlider && prefs.globalPitch !== undefined) {
+            console.log('Setting pitch slider to:', prefs.globalPitch);
+            pitchSlider.value = prefs.globalPitch;
+            if (pitchValue) pitchValue.textContent = prefs.globalPitch;
+        }
+        
+        // Update scale
+        const scaleSelect = document.getElementById('scaleSelect');
+        if (scaleSelect && prefs.currentScale) {
+            console.log('Setting scale select to:', prefs.currentScale);
+            scaleSelect.value = prefs.currentScale;
+        }
+        
+        // Update digit 0 (kick) settings
+        if (prefs.digit0Settings) {
+            this.updateDigitUISettings('digit0', prefs.digit0Settings);
+        }
+        
+        // Update digit 1 (hi-hat) settings
+        if (prefs.digit1Settings) {
+            this.updateDigitUISettings('digit1', prefs.digit1Settings);
+        }
+        
+        // Update typography
+        if (prefs.typography) {
+            const digitSize = document.getElementById('digitSize');
+            const digitSizeValue = document.getElementById('digitSizeValue');
+            const lineHeight = document.getElementById('lineHeight');
+            const lineHeightValue = document.getElementById('lineHeightValue');
+            const letterSpacing = document.getElementById('letterSpacing');
+            const letterSpacingValue = document.getElementById('letterSpacingValue');
+            
+            if (digitSize && prefs.typography.digitSize) {
+                digitSize.value = prefs.typography.digitSize;
+                if (digitSizeValue) digitSizeValue.textContent = `${prefs.typography.digitSize}vw`;
+                this.updateDigitSize(prefs.typography.digitSize);
+            }
+            
+            if (lineHeight && prefs.typography.lineHeight !== undefined) {
+                lineHeight.value = prefs.typography.lineHeight;
+                if (lineHeightValue) lineHeightValue.textContent = prefs.typography.lineHeight;
+                this.updateLineHeight(prefs.typography.lineHeight);
+            }
+            
+            if (letterSpacing && prefs.typography.letterSpacing !== undefined) {
+                letterSpacing.value = prefs.typography.letterSpacing;
+                if (letterSpacingValue) letterSpacingValue.textContent = `${prefs.typography.letterSpacing}em`;
+                this.updateLetterSpacing(prefs.typography.letterSpacing);
+            }
+        }
+        
+        // Update note frequencies based on new scale/pitch
+        this.updateNoteFrequencies();
+    }
+    
+    updateDigitUISettings(digitPrefix, settings) {
+        // Update all the sliders and values for this digit
+        const elements = [
+            'BgColor', 'FgColor', 'Reverb', 'DelayMix', 'DelaySync', 
+            'DelayTime', 'DelayFeedback', 'DelayFilter', 'WaveType'
+        ];
+        
+        elements.forEach(element => {
+            const slider = document.getElementById(`${digitPrefix}${element}`);
+            const valueSpan = document.getElementById(`${digitPrefix}${element}Value`);
+            const settingKey = element.toLowerCase();
+            
+            if (slider && settings[settingKey] !== undefined) {
+                slider.value = settings[settingKey];
+                
+                // Update the display value
+                if (valueSpan) {
+                    if (element === 'Reverb' || element === 'DelayMix' || element === 'DelayFeedback') {
+                        valueSpan.textContent = `${settings[settingKey]}%`;
+                    } else if (element === 'DelayTime') {
+                        valueSpan.textContent = `${settings[settingKey]}ms`;
+                    } else if (element === 'DelayFilter') {
+                        valueSpan.textContent = `${settings[settingKey]}Hz`;
+                    } else if (element === 'Pitch') {
+                        valueSpan.textContent = settings[settingKey];
+                    }
+                }
+            }
+        });
+    }
+
     startAutoplay() {
         // Start audio automatically without overlay
         this.initAudioContext().then(() => {
@@ -85,13 +219,15 @@ class PiMusic {
     }
     
     initElements() {
-        this.playPauseBtn = document.getElementById('playPauseBtn');
         this.tempoSlider = document.getElementById('tempoSlider');
         this.tempoValue = document.getElementById('tempoValue');
         this.digits = document.getElementById('digits');
         this.recenterBtn = document.getElementById('recenterBtn');
         this.digitCounter = document.getElementById('digitCounter');
         this.timerElement = document.getElementById('timer');
+        this.mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        this.mobilePlayBtn = document.getElementById('mobilePlayBtn');
+        this.copySettingsBtn = document.getElementById('copySettingsBtn');
         this.lastDigitElement = null;
         
         // Control panel elements
@@ -100,7 +236,6 @@ class PiMusic {
     }
     
     initEventListeners() {
-        this.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
         this.tempoSlider.addEventListener('input', (e) => this.updateTempo(e.target.value));
         
         // Initialize audio context on any user interaction
@@ -115,6 +250,15 @@ class PiMusic {
         
         // Recenter button
         this.recenterBtn.addEventListener('click', () => this.recenterToLatest());
+        
+        // Mobile buttons
+        this.mobileMenuBtn.addEventListener('click', () => this.toggleControlPanel());
+        this.mobilePlayBtn.addEventListener('click', () => this.togglePlayPause());
+        
+        // Copy settings button
+        if (this.copySettingsBtn) {
+            this.copySettingsBtn.addEventListener('click', () => this.copySettingsToClipboard());
+        }
         
         // Show recenter button when user scrolls away
         window.addEventListener('scroll', () => this.checkScrollPosition());
@@ -284,7 +428,7 @@ class PiMusic {
     }
     
     updateDigit0Reverb(value) {
-        this.digit0Settings.reverb = value / 100;
+        this.digit0Settings.reverb = parseInt(value);
         document.getElementById('digit0ReverbValue').textContent = `${value}%`;
     }
     
@@ -338,7 +482,7 @@ class PiMusic {
     }
     
     updateDigit1Reverb(value) {
-        this.digit1Settings.reverb = value / 100;
+        this.digit1Settings.reverb = parseInt(value);
         document.getElementById('digit1ReverbValue').textContent = `${value}%`;
     }
     
@@ -403,7 +547,7 @@ class PiMusic {
         }
         
         this.isPlaying = true;
-        this.playPauseBtn.textContent = 'Pause';
+        if (this.mobilePlayBtn) this.mobilePlayBtn.classList.add('playing');
         
         // Start timer
         this.startTimer();
@@ -413,7 +557,7 @@ class PiMusic {
     
     pause() {
         this.isPlaying = false;
-        this.playPauseBtn.textContent = 'Play';
+        if (this.mobilePlayBtn) this.mobilePlayBtn.classList.remove('playing');
         if (this.timeoutId) {
             clearTimeout(this.timeoutId);
         }
@@ -663,7 +807,7 @@ class PiMusic {
         // Apply reverb
         if (settings.reverb > 0) {
             const reverbWetGain = this.audioContext.createGain();
-            reverbWetGain.gain.setValueAtTime(settings.reverb * 0.2, this.audioContext.currentTime); // Reduce reverb level
+            reverbWetGain.gain.setValueAtTime((settings.reverb / 100) * 0.05, this.audioContext.currentTime); // Much quieter reverb
             sourceNode.connect(reverbWetGain);
             reverbWetGain.connect(this.reverbNode);
             this.reverbNode.connect(this.masterGain);
@@ -679,9 +823,9 @@ class PiMusic {
     handleKeyPress(e) {
         if (e.key === ' ') {
             e.preventDefault(); // Prevent page scroll
-            if (!this.isPlaying) {
-                this.play();
-            }
+            this.togglePlayPause();
+        } else if (e.key === 'p' || e.key === 'P') {
+            e.preventDefault();
             this.toggleControlPanel();
         }
     }
@@ -792,13 +936,17 @@ class PiMusic {
     
     toggleControlPanel() {
         const panel = this.controlPanel;
+        const mobileBtn = this.mobileMenuBtn;
+        
         if (panel.style.display === 'none' || !panel.style.display) {
             panel.style.display = 'block';
             // Force reflow to ensure the display change takes effect
             panel.offsetHeight;
             panel.classList.add('show');
+            if (mobileBtn) mobileBtn.classList.add('active');
         } else {
             panel.classList.remove('show');
+            if (mobileBtn) mobileBtn.classList.remove('active');
             setTimeout(() => {
                 panel.style.display = 'none';
             }, 300);
@@ -830,6 +978,45 @@ class PiMusic {
         if (!this.startTime || !this.timerElement) return;
         const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
         this.timerElement.textContent = `${elapsed}s`;
+    }
+    
+    copySettingsToClipboard() {
+        // Get current typography settings from elements
+        const digitSizeEl = document.getElementById('digitSize');
+        const lineHeightEl = document.getElementById('lineHeight');
+        const letterSpacingEl = document.getElementById('letterSpacing');
+        
+        const settings = {
+            tempo: this.tempo,
+            globalPitch: this.globalPitch,
+            currentScale: this.currentScale,
+            digit0Settings: { ...this.digit0Settings },
+            digit1Settings: { ...this.digit1Settings },
+            typography: {
+                digitSize: digitSizeEl ? parseInt(digitSizeEl.value) : 6,
+                lineHeight: lineHeightEl ? parseFloat(lineHeightEl.value) : 0.75,
+                letterSpacing: letterSpacingEl ? parseFloat(letterSpacingEl.value) : -0.025
+            }
+        };
+        
+        const json = JSON.stringify(settings, null, 2);
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(json).then(() => {
+            // Visual feedback
+            const originalText = this.copySettingsBtn.textContent;
+            this.copySettingsBtn.textContent = 'Copied!';
+            this.copySettingsBtn.style.background = '#28a745';
+            
+            setTimeout(() => {
+                this.copySettingsBtn.textContent = originalText;
+                this.copySettingsBtn.style.background = '';
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy settings:', err);
+            alert('Failed to copy to clipboard. Check console for JSON.');
+            console.log('Settings JSON:', json);
+        });
     }
 }
 

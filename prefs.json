@@ -1,0 +1,32 @@
+{
+  "tempo": 200,
+  "globalPitch": 0,
+  "currentScale": "major",
+  "digit0Settings": {
+    "bgColor": "#000000",
+    "fgColor": "#ffffff",
+    "reverb": 100,
+    "delayMix": 93,
+    "delayTime": 300,
+    "delaySync": "1/4",
+    "delayFeedback": 20,
+    "delayFilter": 3000,
+    "waveType": "square"
+  },
+  "digit1Settings": {
+    "bgColor": "#ffffff",
+    "fgColor": "#000000",
+    "reverb": 100,
+    "delayMix": 96,
+    "delayTime": 150,
+    "delaySync": "1/8",
+    "delayFeedback": 15,
+    "delayFilter": 5000,
+    "waveType": "sine"
+  },
+  "typography": {
+    "digitSize": 8,
+    "lineHeight": 0.75,
+    "letterSpacing": 0
+  }
+}

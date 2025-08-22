@@ -12,6 +12,23 @@
     <!-- Recenter Button -->
     <button id="recenterBtn" class="recenter-btn" style="display: none;">Recenter</button>
     
+    <!-- Mobile Buttons -->
+    <div class="mobile-buttons">
+        <button id="mobilePlayBtn" class="mobile-btn mobile-play-btn">
+            <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg class="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+        </button>
+        <button id="mobileMenuBtn" class="mobile-btn mobile-menu-btn">
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+        </button>
+    </div>
+    
     <!-- Hidden Control Panel -->
     <div id="controlPanel" class="control-panel" style="display: none;">
         
@@ -55,7 +72,7 @@
                 </div>
                 
                 <div class="control-group" style="justify-content: center; margin-top: 2rem;">
-                    <button id="playPauseBtn" class="control-btn primary">Play</button>
+                    <button id="copySettingsBtn" class="control-btn">Copy Settings JSON</button>
                 </div>
             </div>
             
